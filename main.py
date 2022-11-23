@@ -1,21 +1,25 @@
+from starlette.responses import HTMLResponse
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
 from fastapi import FastAPI
-
+# uvicorn main:app --reload
 app = FastAPI()
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def read_coin():
     try:
+        coin_list = ["순위", "코인명", "티커", "현재가", "전일대비", "업비트", "바이낸스"]
+        thead = ""
+        for coin in coin_list:
+            thead += f"<th>{coin}</th>"
         URL = "https://www.kimpga.com"
-        column_list = ["순위", "코인명", "티커 ", "현재가", "전일대비", "업비트", "바이낸스"]
-
         # 드라이버 설치
-        driver = webdriver.Chrome(ChromeDriverManager().install())
+        options = webdriver.ChromeOptions()
+        # options.add_argument("headless")
+        driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
         driver.implicitly_wait(5)
-
         # 접속
         driver.get(URL)
         time.sleep(1)
@@ -30,35 +34,66 @@ def read_coin():
         time.sleep(1)
         # 바이낸스 선물 USDS-M 마켓 클릭
         driver.find_element(By.XPATH, '//*[@id="__next"]/div[1]/div/div[1]/div[5]/div[2]/div/div[2]/ul/li[3]').click()
-        time.sleep(3)
+        time.sleep(10)
         # tbody
         table_body = driver.find_element(By.TAG_NAME, 'tbody')
         # tr
         table_row = table_body.find_elements(By.TAG_NAME, 'tr')
 
         index = 1
-        result = []
-        # 테이블을 돌면서 필요한 정보 csv에 추가 후 파일로 저장
+        tbody=""
+        # 테이블을 돌면서 필요한 정보 추가
         for td in table_row:
-            data = []
             coin_row = td.text
             coin_row_list = coin_row.split("\n")
-            time.sleep(1)
-            data.append(index)
-            data.append(coin_row_list[0])
-            data.append(coin_row_list[1])
-            data.append(coin_row_list[-11])
-            data.append(coin_row_list[-7].replace("%", ""))
-            data.append(coin_row_list[-2].split()[1].replace("억", ""))
-            data.append(coin_row_list[12].replace("조 ", "").replace("억", ""))
-            result.append(data)
+            tbody += f"""
+            <tr>
+                <td>{index}
+                <td>{coin_row_list[0]}</td>
+                <td>{coin_row_list[1]}</td>
+                <td>{coin_row_list[-11]}</td>
+                <td>{coin_row_list[-7].replace("%", "")}</td>
+                <td>{coin_row_list[-2].split()[1].replace("억", "")}</td>
+                <td>{coin_row_list[12].replace("조 ", "").replace("억", "")}</td>
+            </tr>
+            """
             index += 1
-
         driver.quit()
-        return {"success": True, "data": result}
+        return f"""
+        <html>
+            <head>
+                <title>코인 가격</title>
+            </head>
+            <body>
+                <table>
+                    <thead>
+                        <tr>
+                            {thead}
+                        </tr>
+                    </thead>
+                    <tbody>
+                            {tbody}
+                    </tbody>
+                </table>
+                
+            </body>
+        </html>
+        """
     except:
         driver.quit()
-        return {"success": False, "data": []}
+        return f"""
+        <html>
+            <head>
+                <title>코인 가격</title>
+            </head>
+            <body>
+                <p>
+                    크롤링 실패, 다시 시도해주세요
+                </p>
+                
+            </body>
+        </html>
+        """
 
 
 
