@@ -17,7 +17,13 @@ def read_coin():
         URL = "https://www.kimpga.com"
         # 드라이버 설치
         options = webdriver.ChromeOptions()
-        # options.add_argument("headless")
+        options.add_argument("--headless")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--window-size=1920,1200")
+        options.add_argument("--ignore-certificate-errors")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
         driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
         driver.implicitly_wait(5)
         # 접속
@@ -34,7 +40,7 @@ def read_coin():
         time.sleep(1)
         # 바이낸스 선물 USDS-M 마켓 클릭
         driver.find_element(By.XPATH, '//*[@id="__next"]/div[1]/div/div[1]/div[5]/div[2]/div/div[2]/ul/li[3]').click()
-        time.sleep(10)
+        time.sleep(15)
         # tbody
         table_body = driver.find_element(By.TAG_NAME, 'tbody')
         # tr
@@ -65,7 +71,7 @@ def read_coin():
                 <title>코인 가격</title>
             </head>
             <body>
-                <table>
+                <table style="border:1px solid black">
                     <thead>
                         <tr>
                             {thead}
