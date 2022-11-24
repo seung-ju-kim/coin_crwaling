@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 import time
 from fastapi import FastAPI
 # uvicorn main:app --reload
+# pip install -r ./requirements.txt –user
 app = FastAPI()
 
 @app.get("/", response_class=HTMLResponse)
@@ -40,7 +41,7 @@ def read_coin():
         time.sleep(1)
         # 바이낸스 선물 USDS-M 마켓 클릭
         driver.find_element(By.XPATH, '//*[@id="__next"]/div[1]/div/div[1]/div[5]/div[2]/div/div[2]/ul/li[3]').click()
-        time.sleep(15)
+        time.sleep(25)
         # tbody
         table_body = driver.find_element(By.TAG_NAME, 'tbody')
         # tr
@@ -60,7 +61,7 @@ def read_coin():
                 <td>{coin_row_list[-11]}</td>
                 <td>{coin_row_list[-7].replace("%", "")}</td>
                 <td>{coin_row_list[-2].split()[1].replace("억", "")}</td>
-                <td>{coin_row_list[12].replace("조 ", "").replace("억", "")}</td>
+                <td>{coin_row_list[-1].replace("조 ", "").replace("억", "")}</td>
             </tr>
             """
             index += 1
