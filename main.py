@@ -1,6 +1,7 @@
 from starlette.responses import HTMLResponse
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
+from pyvirtualdisplay import Display
 from selenium.webdriver.common.by import By
 import time
 from fastapi import FastAPI
@@ -11,6 +12,9 @@ app = FastAPI()
 @app.get("/", response_class=HTMLResponse)
 def read_coin():
     try:
+        display = Display(visible=0, size=(1920, 1080))
+        display.start()
+
         coin_list = ["순위", "코인명", "티커", "현재가", "전일대비", "업비트", "바이낸스"]
         thead = ""
         for coin in coin_list:
@@ -66,6 +70,7 @@ def read_coin():
             """
             index += 1
         driver.quit()
+        display.stop()
         return f"""
         <html>
             <head>
@@ -82,12 +87,12 @@ def read_coin():
                             {tbody}
                     </tbody>
                 </table>
-                
             </body>
         </html>
         """
     except:
         driver.quit()
+        display.stop()
         return f"""
         <html>
             <head>
@@ -97,14 +102,7 @@ def read_coin():
                 <p>
                     크롤링 실패, 다시 시도해주세요
                 </p>
-                
+
             </body>
         </html>
         """
-
-
-
-
-
-
-
